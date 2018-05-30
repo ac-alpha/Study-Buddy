@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="in.ashutoshchaubey.studybuddy.MainActivity">
+
+
+    <Button
+        android:id="@+id/apps_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="16dp"
+        android:text="@string/apps"
+        android:background="@drawable/button_background"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_margin="@dimen/views_margin_padding">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Default Alarm"
+            android:textColor="#000000"/>
+
+        <com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch
+            android:id="@+id/alarm_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:ball_press_color="#FF5722"
+            app:ball_release_color="#FF9E80"
+            app:base_press_color="#BF360C"
+            app:base_release_color="#FBE9E7"
+            app:icon_press="@drawable/alarm_on"
+            app:icon_release="@drawable/alarm_off" />
+
+
+    </LinearLayout>
+
+
+</RelativeLayout>

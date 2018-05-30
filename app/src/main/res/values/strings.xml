@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Study!Buddy</string>
+    <string name="dark_theme">Dark Theme</string>
+    <string name="apps">Apps</string>
+</resources>
