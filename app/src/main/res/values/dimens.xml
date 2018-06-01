@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="views_margin_padding">16dp</dimen>
+    <dimen name="views_margin_padding_s">8dp</dimen>
+    <dimen name="views_margin_padding_m">16dp</dimen>
+    <dimen name="views_margin_padding_l">32dp</dimen>
+    <dimen name="views_margin_padding_xl">48dp</dimen>
+    <dimen name="views_margin_padding_xxl">64dp</dimen>
+    <dimen name="views_margin_padding_xxxl">96dp</dimen>
 </resources>
