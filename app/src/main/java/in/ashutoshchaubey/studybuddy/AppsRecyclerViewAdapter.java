@@ -50,6 +50,7 @@ public class AppsRecyclerViewAdapter extends RecyclerView.Adapter<AppsRecyclerVi
             super(itemView);
             appName = (TextView) itemView.findViewById(R.id.app_name);
             appIcon = (ImageView) itemView.findViewById(R.id.app_icon);
+            itemView.setOnClickListener(this);
         }
 
         @Override

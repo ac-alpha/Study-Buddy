@@ -1,145 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="in.ashutoshchaubey.studybuddy.MainActivity">
+    android:gravity="bottom"
+    sothree:umanoDragView="@+id/dragView"
+    sothree:umanoOverlay="true"
+    sothree:umanoPanelHeight="68dp"
+    sothree:umanoParallaxOffset="100dp"
+    sothree:umanoScrollableView="@+id/list"
+    sothree:umanoShadowHeight="4dp">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/main_parent_home_screen"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="in.ashutoshchaubey.studybuddy.MainActivity">
 
 
-    <!--<LinearLayout-->
-        <!--android:orientation="vertical"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_marginBottom="@dimen/views_margin_padding_xxxl"-->
-        <!--android:layout_marginEnd="@dimen/views_margin_padding_m"-->
-        <!--android:layout_marginStart="@dimen/views_margin_padding_m"-->
-        <!--android:layout_marginTop="@dimen/views_margin_padding_xl"-->
-        <!--android:background="#ffd1d1">-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/views_margin_padding_xxxl"
+            android:layout_marginEnd="@dimen/views_margin_padding_m"
+            android:layout_marginStart="@dimen/views_margin_padding_m"
+            android:layout_marginTop="@dimen/views_margin_padding_xl"
+            android:background="#ffd1d1"
+            android:orientation="vertical">
 
-        <!--<EditText-->
-            <!--android:id="@+id/saved_note"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_margin="@dimen/views_margin_padding_m"-->
-            <!--android:background="@android:color/transparent"-->
-            <!--android:hint="@string/note_hint" />-->
+            <EditText
+                android:id="@+id/saved_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/views_margin_padding_m"
+                android:background="@android:color/transparent"
+                android:hint="@string/note_hint" />
 
-        <!--<ImageView-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:scaleType="centerCrop"-->
-            <!--android:layout_margin="@dimen/views_margin_padding_m"/>-->
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/views_margin_padding_m"
+                android:scaleType="centerCrop" />
 
-    <!--</LinearLayout>-->
-
-
-    <!--<Button-->
-        <!--android:id="@+id/apps_button"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:layout_margin="@dimen/views_margin_padding_m"-->
-        <!--android:background="@drawable/button_background"-->
-        <!--android:text="@string/apps" />-->
-
-    <!--<LinearLayout-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_margin="@dimen/views_margin_padding_m"-->
-        <!--android:gravity="center"-->
-        <!--android:orientation="horizontal">-->
+        </LinearLayout>
 
 
-        <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:text="@string/default_alarm"-->
-            <!--android:textColor="#000000" />-->
+        <Button
+            android:id="@+id/apps_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="@dimen/views_margin_padding_m"
+            android:background="@drawable/button_background"
+            android:text="@string/apps" />
 
-        <!--<com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch-->
-            <!--android:id="@+id/alarm_switch"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--app:ball_press_color="#FF5722"-->
-            <!--app:ball_release_color="#FF9E80"-->
-            <!--app:base_press_color="#BF360C"-->
-            <!--app:base_release_color="#FBE9E7"-->
-            <!--app:icon_press="@drawable/alarm_on"-->
-            <!--app:icon_release="@drawable/alarm_off" />-->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="@dimen/views_margin_padding_m"
+            android:gravity="center"
+            android:orientation="horizontal">
 
 
-    <!--</LinearLayout>-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/default_alarm"
+                android:textColor="#000000" />
 
-    <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/fab_settings_menu"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_margin="@dimen/views_margin_padding_m"-->
-        <!--android:padding="@dimen/views_margin_padding_m"-->
-        <!--android:src="@drawable/settings_menu"-->
-        <!--app:backgroundTint="#FF5722" />-->
+            <com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch
+                android:id="@+id/alarm_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:ball_press_color="#FF5722"
+                app:ball_release_color="#FF9E80"
+                app:base_press_color="#BF360C"
+                app:base_release_color="#FBE9E7"
+                app:icon_press="@drawable/alarm_on"
+                app:icon_release="@drawable/alarm_off" />
 
-    <!--<LinearLayout-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_above="@id/fab_settings_menu"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_marginEnd="@dimen/views_margin_padding_m"-->
-        <!--android:gravity="end"-->
-        <!--android:orientation="vertical">-->
-        <!--&lt;!&ndash;android:visibility="gone"&ndash;&gt;-->
-        <!--&lt;!&ndash;&gt;&ndash;&gt;-->
 
-        <!--<LinearLayout-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="8dp"-->
-            <!--android:gravity="center"-->
-            <!--android:orientation="horizontal">-->
+        </LinearLayout>
 
-            <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginEnd="8dp"-->
-                <!--android:text="@string/phone_settings"-->
-                <!--android:textColor="#000000" />-->
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_settings_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="@dimen/views_margin_padding_m"
+            android:padding="@dimen/views_margin_padding_m"
+            android:src="@drawable/settings_menu"
+            app:backgroundTint="#FF5722" />
 
-            <!--<android.support.design.widget.FloatingActionButton-->
-                <!--android:id="@+id/fab_settings_phone"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:src="@drawable/settings_mobile" />-->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/fab_settings_menu"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/views_margin_padding_m"
+            android:gravity="end"
+            android:orientation="vertical">
+            <!--android:visibility="gone"-->
+            <!--&gt;-->
 
-        <!--</LinearLayout>-->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
 
-        <!--<LinearLayout-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="8dp"-->
-            <!--android:gravity="center"-->
-            <!--android:orientation="horizontal">-->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/phone_settings"
+                    android:textColor="#000000" />
 
-            <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginEnd="8dp"-->
-                <!--android:text="@string/launcher_settings"-->
-                <!--android:textColor="#000000" />-->
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fab_settings_phone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/settings_mobile" />
 
-            <!--<android.support.design.widget.FloatingActionButton-->
-                <!--android:id="@+id/fab_settings_launcher"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:src="@drawable/settings_launcher" />-->
+            </LinearLayout>
 
-        <!--</LinearLayout>-->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
 
-    <!--</LinearLayout>-->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/launcher_settings"
+                    android:textColor="#000000" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fab_settings_launcher"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/settings_launcher" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -148,11 +164,17 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/apps_list_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 
 
-</RelativeLayout>
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+
+
+
+
+
 
 
