@@ -71,4 +71,11 @@ public class AppsRecyclerViewAdapter extends RecyclerView.Adapter<AppsRecyclerVi
         this.mClickListener = itemClickListener;
     }
 
+    public ArrayList<AppItem> getmData() {
+        return mData;
+    }
+
+    public void setmData(ArrayList<AppItem> mData) {
+        this.mData = mData;
+    }
 }
