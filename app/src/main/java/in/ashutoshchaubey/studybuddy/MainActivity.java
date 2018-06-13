@@ -1,5 +1,8 @@
 package in.ashutoshchaubey.studybuddy;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -18,6 +21,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -39,6 +43,7 @@ import static android.view.View.GONE;
 
 public class MainActivity extends AppCompatActivity implements AppsRecyclerViewAdapter.ItemClickListener {
 
+    private static final int REQ_CODE = 0;
     private PackageManager manager;
     private ArrayList<AppItem> apps;
     private AppsRecyclerViewAdapter adapter;
@@ -49,20 +54,37 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     private LinearLayout mPhoneSettingsParent, mLauncherSettingsParent, mSearchAppsParent, mPanelLabelParentCollapsed,
             mPanelLabelParentExpanded;
     private EditText mSearchEditText;
-    MaterialAnimatedSwitch alarmSwitch;
-    Calendar alarmCal;
+    private Switch alarmSwitch;
+    private Calendar alarmCal;
+    private Intent alarmReceiverIntent;
+    private PendingIntent pendingIntent;
+    Context context;
+    private AlarmManager alarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        alarmSwitch = (MaterialAnimatedSwitch)findViewById(R.id.alarm_switch);
-        alarmSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(boolean b) {
+        this.context=context;
 
-                SharedPreferences preferences = getApplicationContext().getSharedPreferences(LauncherSettingsActivity.MY_PREFERENCES,MODE_PRIVATE);
+        final SharedPreferences preferences = getApplicationContext()
+                .getSharedPreferences(LauncherSettingsActivity.MY_PREFERENCES,MODE_PRIVATE);
+
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+        alarmSwitch = (Switch)findViewById(R.id.alarm_switch);
+
+        String switchState = preferences.getString("switchState","error");
+
+        if(switchState.equals("on")){
+            alarmSwitch.setChecked(true);
+        }
+
+        alarmSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
                 int hr = preferences.getInt("hourOfDay",0);
                 int min = preferences.getInt("minute",0);
                 alarmCal = Calendar.getInstance();
@@ -73,9 +95,32 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
                     alarmCal.set(Calendar.DATE,1);
                 }
 
+                alarmReceiverIntent = new Intent(MainActivity.this,AlarmReceiver.class);
+                SharedPreferences.Editor editor = preferences.edit();
+
                 if(b){
 
+                    alarmReceiverIntent.putExtra("extra",b);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
+                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pendingIntent);
+                    editor.putString("switchState","on");
+
+
+                }else{
+
+                    alarmReceiverIntent.putExtra("extra",b);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
+                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    sendBroadcast(alarmReceiverIntent);
+                    editor.putString("switchState","off");
+                    if(pendingIntent!=null){
+                        alarmManager.cancel(pendingIntent);
+                    }
+
+
                 }
+                editor.apply();
             }
         });
 

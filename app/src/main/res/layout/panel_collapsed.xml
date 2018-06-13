@@ -51,16 +51,10 @@
             android:text="@string/default_alarm"
             android:textColor="#000000" />
 
-        <com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch
+        <Switch
             android:id="@+id/alarm_switch"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:ball_press_color="#FF5722"
-            app:ball_release_color="#FF9E80"
-            app:base_press_color="#BF360C"
-            app:base_release_color="#FBE9E7"
-            app:icon_press="@drawable/alarm_on"
-            app:icon_release="@drawable/alarm_off" />
+            android:layout_width="wrap_content"/>
 
 
     </LinearLayout>
