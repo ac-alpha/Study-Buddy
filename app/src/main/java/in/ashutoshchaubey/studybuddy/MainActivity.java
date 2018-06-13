@@ -1,6 +1,7 @@
 package in.ashutoshchaubey.studybuddy;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
@@ -20,13 +21,16 @@ import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.Toast;
 
+import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -45,11 +49,35 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     private LinearLayout mPhoneSettingsParent, mLauncherSettingsParent, mSearchAppsParent, mPanelLabelParentCollapsed,
             mPanelLabelParentExpanded;
     private EditText mSearchEditText;
+    MaterialAnimatedSwitch alarmSwitch;
+    Calendar alarmCal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        alarmSwitch = (MaterialAnimatedSwitch)findViewById(R.id.alarm_switch);
+        alarmSwitch.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(boolean b) {
+
+                SharedPreferences preferences = getApplicationContext().getSharedPreferences(LauncherSettingsActivity.MY_PREFERENCES,MODE_PRIVATE);
+                int hr = preferences.getInt("hourOfDay",0);
+                int min = preferences.getInt("minute",0);
+                alarmCal = Calendar.getInstance();
+                Calendar nowCal = Calendar.getInstance();
+                alarmCal.set(Calendar.HOUR_OF_DAY,hr);
+                alarmCal.set(Calendar.MINUTE,min);
+                if(alarmCal.compareTo(nowCal)<=0){
+                    alarmCal.set(Calendar.DATE,1);
+                }
+
+                if(b){
+
+                }
+            }
+        });
 
         mMainParentHomeScreen = (RelativeLayout) findViewById(R.id.main_parent_home_screen);
 
@@ -139,6 +167,13 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
                     mPhoneSettingsParent.startAnimation(mShowLayout);
                     fabOptions.startAnimation(mShowButton);
                 }
+            }
+        });
+
+        fabLauncherSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, LauncherSettingsActivity.class));
             }
         });
 

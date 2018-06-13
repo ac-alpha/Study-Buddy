@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="in.ashutoshchaubey.studybuddy">
 
     <application
@@ -17,6 +18,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".AlarmReceiver"
+            android:process=":remote" />
+
+        <service
+            android:name=".RingtonePlayingService"
+            android:enabled="true" />
+
+        <activity
+            android:name=".LauncherSettingsActivity"
+            android:label="@string/title_activity_launcher_settings"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/LauncherSettingsTheme" />
     </application>
 
 </manifest>
