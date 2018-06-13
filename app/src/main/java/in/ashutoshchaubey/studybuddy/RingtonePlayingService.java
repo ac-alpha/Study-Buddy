@@ -38,9 +38,9 @@ public class RingtonePlayingService extends Service {
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent1, 0);
 
         Notification mNotify  = new Notification.Builder(this)
-                .setContentTitle("Richard Dawkins is talking" + "!")
-                .setContentText("Click me!")
-                .setSmallIcon(R.drawable.settings_launcher)
+                .setContentTitle("ALARM IS RINGING" + "!")
+                .setContentText("Wakey wakey!")
+                .setSmallIcon(R.drawable.alarm_on)
                 .setContentIntent(pIntent)
                 .setAutoCancel(true)
                 .build();
@@ -71,7 +71,7 @@ public class RingtonePlayingService extends Service {
             this.isRunning = true;
             this.startId = 0;
 
-            editor.putString("switchState", "on");
+            editor.putString("switchState", Constants.ALARM_RINGING);
             editor.apply();
 
         }

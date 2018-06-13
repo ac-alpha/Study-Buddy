@@ -1,8 +1,10 @@
 package in.ashutoshchaubey.studybuddy;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
 
         final SharedPreferences preferences = getApplicationContext()
                 .getSharedPreferences(LauncherSettingsActivity.MY_PREFERENCES,MODE_PRIVATE);
+        final SharedPreferences.Editor editor = preferences.edit();
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
@@ -77,8 +80,61 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
 
         String switchState = preferences.getString("switchState","error");
 
-        if(switchState.equals("on")){
+        if(switchState.equals(Constants.ALARM_ON)) {
             alarmSwitch.setChecked(true);
+        }
+        if(switchState.equals(Constants.ALARM_RINGING)){
+            alarmSwitch.setChecked(true);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Snooze Alarm?");
+            builder.setMessage("Press Snooze to set alarm for after 10 minutes");
+            builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    int hr = preferences.getInt("hourOfDay",0);
+                    int min = preferences.getInt("minute",0);
+                    int snoozemin = preferences.getInt("snooze_time",1);
+                    min+=snoozemin;
+                    if(min>60){
+                        min-=60;
+                        hr+=1;
+                    }
+                    alarmCal = Calendar.getInstance();
+                    Calendar nowCal = Calendar.getInstance();
+                    alarmCal.set(Calendar.HOUR_OF_DAY,hr);
+                    alarmCal.set(Calendar.MINUTE,min);
+                    if(alarmCal.compareTo(nowCal)<=0){
+                        alarmCal.set(Calendar.DATE,1);
+                    }
+
+                    alarmReceiverIntent = new Intent(MainActivity.this,AlarmReceiver.class);
+
+                    alarmReceiverIntent.putExtra("extra",true);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
+                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pendingIntent);
+                    editor.putString("switchState",Constants.ALARM_ON);
+                    editor.apply();
+                }
+            });
+            builder.setNegativeButton("Stop", new DialogInterface.OnClickListener(){
+
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    alarmReceiverIntent = new Intent(MainActivity.this,AlarmReceiver.class);
+                    alarmReceiverIntent.putExtra("extra",false);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
+                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    sendBroadcast(alarmReceiverIntent);
+                    editor.putString("switchState",Constants.ALARM_OFF);
+                    if(pendingIntent!=null){
+                        alarmManager.cancel(pendingIntent);
+                    }
+                    editor.apply();
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
 
         alarmSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -96,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
                 }
 
                 alarmReceiverIntent = new Intent(MainActivity.this,AlarmReceiver.class);
-                SharedPreferences.Editor editor = preferences.edit();
 
                 if(b){
 
@@ -104,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
                     pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
                             alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                     alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pendingIntent);
-                    editor.putString("switchState","on");
+                    editor.putString("switchState",Constants.ALARM_ON);
 
 
                 }else{
@@ -113,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
                     pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
                             alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
                     sendBroadcast(alarmReceiverIntent);
-                    editor.putString("switchState","off");
+                    editor.putString("switchState",Constants.ALARM_OFF);
                     if(pendingIntent!=null){
                         alarmManager.cancel(pendingIntent);
                     }
