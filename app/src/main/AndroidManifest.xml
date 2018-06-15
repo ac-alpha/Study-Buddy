@@ -28,6 +28,13 @@
         <service
             android:name=".RingtonePlayingService"
             android:enabled="true" />
+        <service android:name=".AppsNotificationListenerService"
+            android:label="AppsNotificationListenerService"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
         <activity
             android:name=".LauncherSettingsActivity"
