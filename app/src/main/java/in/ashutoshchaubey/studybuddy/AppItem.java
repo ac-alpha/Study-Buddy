@@ -10,7 +10,8 @@ public class AppItem {
 
     CharSequence label; //package name
     CharSequence name; //app name
-    Drawable icon; //app icon
+    Drawable icon;//app icon
+    Boolean isUseful = true;
 
 //    public AppItem(CharSequence label, CharSequence name, Drawable icon) {
 //        this.label = label;
@@ -40,5 +41,13 @@ public class AppItem {
 
     public void setName(CharSequence name) {
         this.name = name;
+    }
+
+    public Boolean getUseful() {
+        return isUseful;
+    }
+
+    public void setUseful(Boolean useful) {
+        isUseful = useful;
     }
 }

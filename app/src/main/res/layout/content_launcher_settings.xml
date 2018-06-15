@@ -29,5 +29,28 @@
             tools:text="@string/dummy_time"
             android:padding="@dimen/views_margin_padding_m"/>
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/identify_useful_apps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Identify useful apps"
+            android:padding="@dimen/views_margin_padding_m"
+            android:textSize="16sp"/>
+
+        <ImageView
+            android:id="@+id/useful_apps_found"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/tick"
+            android:layout_margin="@dimen/views_margin_padding_m"/>
+    </LinearLayout>
 
 </LinearLayout>

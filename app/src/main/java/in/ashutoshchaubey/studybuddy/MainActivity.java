@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
@@ -30,11 +32,9 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -62,28 +62,39 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     private PendingIntent pendingIntent;
     Context context;
     private AlarmManager alarmManager;
+    AppsDbHelper appsDbHelper;
+    SQLiteDatabase db;
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
+    private String[] badCategories = {"COMMUNICATION", "GAME", "BEAUTY","COMICS",
+                "DATING", "ENTERTAINMENT", "LIFESTYLE", "MUSIC_AND_AUDIO", "SHOPPING", "SOCIAL", "SPORTS", "VIDEO_PLAYERS"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.context=context;
+        this.context = context;
 
-        final SharedPreferences preferences = getApplicationContext()
-                .getSharedPreferences(LauncherSettingsActivity.MY_PREFERENCES,MODE_PRIVATE);
-        final SharedPreferences.Editor editor = preferences.edit();
+        Logger.addLogAdapter(new AndroidLogAdapter());
+
+        preferences = getApplicationContext()
+                .getSharedPreferences(LauncherSettingsActivity.MY_PREFERENCES, MODE_PRIVATE);
+        editor = preferences.edit();
+
+        appsDbHelper = new AppsDbHelper(this);
+        db = appsDbHelper.getReadableDatabase();
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
-        alarmSwitch = (Switch)findViewById(R.id.alarm_switch);
+        alarmSwitch = (Switch) findViewById(R.id.alarm_switch);
 
-        String switchState = preferences.getString("switchState","error");
+        String switchState = preferences.getString("switchState", "error");
 
-        if(switchState.equals(Constants.ALARM_ON)) {
+        if (switchState.equals(Constants.ALARM_ON)) {
             alarmSwitch.setChecked(true);
         }
-        if(switchState.equals(Constants.ALARM_RINGING)){
+        if (switchState.equals(Constants.ALARM_RINGING)) {
             alarmSwitch.setChecked(true);
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Snooze Alarm?");
@@ -91,43 +102,43 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
             builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    int hr = preferences.getInt("hourOfDay",0);
-                    int min = preferences.getInt("minute",0);
-                    int snoozemin = preferences.getInt("snooze_time",1);
-                    min+=snoozemin;
-                    if(min>60){
-                        min-=60;
-                        hr+=1;
+                    int hr = preferences.getInt("hourOfDay", 0);
+                    int min = preferences.getInt("minute", 0);
+                    int snoozemin = preferences.getInt("snooze_time", 1);
+                    min += snoozemin;
+                    if (min > 60) {
+                        min -= 60;
+                        hr += 1;
                     }
                     alarmCal = Calendar.getInstance();
                     Calendar nowCal = Calendar.getInstance();
-                    alarmCal.set(Calendar.HOUR_OF_DAY,hr);
-                    alarmCal.set(Calendar.MINUTE,min);
-                    if(alarmCal.compareTo(nowCal)<=0){
-                        alarmCal.set(Calendar.DATE,1);
+                    alarmCal.set(Calendar.HOUR_OF_DAY, hr);
+                    alarmCal.set(Calendar.MINUTE, min);
+                    if (alarmCal.compareTo(nowCal) <= 0) {
+                        alarmCal.set(Calendar.DATE, 1);
                     }
 
-                    alarmReceiverIntent = new Intent(MainActivity.this,AlarmReceiver.class);
+                    alarmReceiverIntent = new Intent(MainActivity.this, AlarmReceiver.class);
 
-                    alarmReceiverIntent.putExtra("extra",true);
-                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
-                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmReceiverIntent.putExtra("extra", true);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
+                            alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                     alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pendingIntent);
-                    editor.putString("switchState",Constants.ALARM_ON);
+                    editor.putString("switchState", Constants.ALARM_ON);
                     editor.apply();
                 }
             });
-            builder.setNegativeButton("Stop", new DialogInterface.OnClickListener(){
+            builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    alarmReceiverIntent = new Intent(MainActivity.this,AlarmReceiver.class);
-                    alarmReceiverIntent.putExtra("extra",false);
-                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
-                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmReceiverIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+                    alarmReceiverIntent.putExtra("extra", false);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
+                            alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                     sendBroadcast(alarmReceiverIntent);
-                    editor.putString("switchState",Constants.ALARM_OFF);
-                    if(pendingIntent!=null){
+                    editor.putString("switchState", Constants.ALARM_OFF);
+                    if (pendingIntent != null) {
                         alarmManager.cancel(pendingIntent);
                     }
                     editor.apply();
@@ -141,35 +152,35 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
-                int hr = preferences.getInt("hourOfDay",0);
-                int min = preferences.getInt("minute",0);
+                int hr = preferences.getInt("hourOfDay", 0);
+                int min = preferences.getInt("minute", 0);
                 alarmCal = Calendar.getInstance();
                 Calendar nowCal = Calendar.getInstance();
-                alarmCal.set(Calendar.HOUR_OF_DAY,hr);
-                alarmCal.set(Calendar.MINUTE,min);
-                if(alarmCal.compareTo(nowCal)<=0){
-                    alarmCal.set(Calendar.DATE,1);
+                alarmCal.set(Calendar.HOUR_OF_DAY, hr);
+                alarmCal.set(Calendar.MINUTE, min);
+                if (alarmCal.compareTo(nowCal) <= 0) {
+                    alarmCal.set(Calendar.DATE, 1);
                 }
 
-                alarmReceiverIntent = new Intent(MainActivity.this,AlarmReceiver.class);
+                alarmReceiverIntent = new Intent(MainActivity.this, AlarmReceiver.class);
 
-                if(b){
+                if (b) {
 
-                    alarmReceiverIntent.putExtra("extra",b);
-                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
-                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmReceiverIntent.putExtra("extra", b);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
+                            alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                     alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pendingIntent);
-                    editor.putString("switchState",Constants.ALARM_ON);
+                    editor.putString("switchState", Constants.ALARM_ON);
 
 
-                }else{
+                } else {
 
-                    alarmReceiverIntent.putExtra("extra",b);
-                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this,REQ_CODE,
-                            alarmReceiverIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmReceiverIntent.putExtra("extra", b);
+                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
+                            alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                     sendBroadcast(alarmReceiverIntent);
-                    editor.putString("switchState",Constants.ALARM_OFF);
-                    if(pendingIntent!=null){
+                    editor.putString("switchState", Constants.ALARM_OFF);
+                    if (pendingIntent != null) {
                         alarmManager.cancel(pendingIntent);
                     }
 
@@ -181,8 +192,9 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
 
         mMainParentHomeScreen = (RelativeLayout) findViewById(R.id.main_parent_home_screen);
 
-        Logger.addLogAdapter(new AndroidLogAdapter());
+
         loadApps("");
+
 
         RecyclerView appsRecyclerView = (RecyclerView) findViewById(R.id.apps_list_recycler_view);
         int numberOfColumns = 4;
@@ -191,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
         adapter.setClickListener(this);
         appsRecyclerView.setAdapter(adapter);
 
-        mPanelLabelParentCollapsed = (LinearLayout)findViewById(R.id.apps_list_label_parent_collapsed);
+        mPanelLabelParentCollapsed = (LinearLayout) findViewById(R.id.apps_list_label_parent_collapsed);
         mPanelLabelParentExpanded = (LinearLayout) findViewById(R.id.apps_list_label_parent_expanded);
 
         mSearchEditText = (EditText) findViewById(R.id.search_apps_edit_text);
@@ -218,15 +230,15 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
         mLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
-                Logger.i("onPanelStateChanger1"+slideOffset);
-                mMainParentHomeScreen.setAlpha(255-(Math.round(slideOffset*255)));
-                mPanelLabelParentCollapsed.setAlpha(255-(Math.round(slideOffset*255)));
+                Logger.i("onPanelStateChanger1" + slideOffset);
+                mMainParentHomeScreen.setAlpha(255 - (Math.round(slideOffset * 255)));
+                mPanelLabelParentCollapsed.setAlpha(255 - (Math.round(slideOffset * 255)));
             }
 
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState,
                                             SlidingUpPanelLayout.PanelState newState) {
-                Logger.i("onPanelStateChanger2"+newState);
+                Logger.i("onPanelStateChanger2" + newState);
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     if (newState == SlidingUpPanelLayout.PanelState.EXPANDED) {
                         getWindow().setNavigationBarColor(Color.parseColor("#aa000000"));
@@ -254,13 +266,13 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
         fabOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mLauncherSettingsParent.getVisibility()==View.VISIBLE && mPhoneSettingsParent.getVisibility()==View.VISIBLE){
+                if (mLauncherSettingsParent.getVisibility() == View.VISIBLE && mPhoneSettingsParent.getVisibility() == View.VISIBLE) {
                     mLauncherSettingsParent.setVisibility(GONE);
                     mPhoneSettingsParent.setVisibility(GONE);
                     mLauncherSettingsParent.startAnimation(mHideLayout);
                     mPhoneSettingsParent.startAnimation(mHideLayout);
                     fabOptions.startAnimation(mHideButton);
-                }else{
+                } else {
                     mLauncherSettingsParent.setVisibility(View.VISIBLE);
                     mPhoneSettingsParent.setVisibility(View.VISIBLE);
                     mLauncherSettingsParent.startAnimation(mShowLayout);
@@ -307,29 +319,63 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     private void loadApps(String pattern) {
         manager = getPackageManager();
         apps = new ArrayList<AppItem>();
-
         Intent i = new Intent(Intent.ACTION_MAIN, null);
         i.addCategory(Intent.CATEGORY_LAUNCHER);
 
         List<ResolveInfo> availableActivities = manager.queryIntentActivities(i, 0);
-        for (ResolveInfo ri : availableActivities) {
 
-            if(ri.loadLabel(manager).toString().toLowerCase().contains(pattern)) {
-                AppItem app = new AppItem();
-                app.label = ri.activityInfo.packageName;
-                app.name = ri.loadLabel(manager);
-                app.icon = ri.loadIcon(manager);
-                apps.add(app);
+        Boolean appsIdentified = preferences.getBoolean("identified", false);
+        if(appsIdentified){
+            Cursor cursor = db.query(Constants.AppsEntry.TABLE_NAME,null, null,
+                    null, null, null, null);
+            if (cursor != null && cursor.getCount() > 0) {
+                if (cursor.moveToFirst()) {
+                    do {
+
+                        AppItem app = new AppItem();
+                        app.label = cursor.getString(2);
+                        app.name = cursor.getString(1);
+                        for (ResolveInfo ri : availableActivities){
+                            if(ri.loadLabel(manager).toString().equals(app.name)){
+                                app.icon = ri.loadIcon(manager);
+                            }
+                        }
+                        int use = cursor.getInt(3);
+                        if(use == 1){
+                            app.isUseful=true;
+                        }else{
+                            app.isUseful=false;
+                        }
+                        if(app.isUseful && app.name.toString().contains(pattern)){
+                            apps.add(app);
+                        }
+
+                    } while (cursor.moveToNext());
+                }
+                cursor.close();
             }
 
+        }else {
+
+            for (ResolveInfo ri : availableActivities) {
+
+                if (ri.loadLabel(manager).toString().toLowerCase().contains(pattern)) {
+                    final AppItem app = new AppItem();
+                    app.label = ri.activityInfo.packageName;
+                    app.name = ri.loadLabel(manager);
+                    app.icon = ri.loadIcon(manager);
+                    apps.add(app);
+                }
+
+            }
         }
 
         Collections.sort(apps, new Comparator<AppItem>() {
             @Override
             public int compare(AppItem app1, AppItem app2) {
-                if(app1.name.toString().compareToIgnoreCase(app2.name.toString())>0){
+                if (app1.name.toString().compareToIgnoreCase(app2.name.toString()) > 0) {
                     return 1;
-                }else{
+                } else {
                     return -1;
                 }
             }
@@ -346,23 +392,23 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     @Override
     public void onBackPressed() {
         Logger.i("Back button pressed from launcher home");
-        if(mLayout.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+        if (mLayout.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
             Toast.makeText(this, "You are at launcher home", Toast.LENGTH_SHORT).show();
-        }else {
+        } else {
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         }
     }
 
-    private void loadFabs(){
+    private void loadFabs() {
         fabOptions = (FloatingActionButton) findViewById(R.id.fab_settings_menu);
         fabLauncherSettings = (FloatingActionButton) findViewById(R.id.fab_settings_launcher);
         fabPhoneSettings = (FloatingActionButton) findViewById(R.id.fab_settings_phone);
 
         //Animations
-        mShowButton = AnimationUtils.loadAnimation(this,R.anim.show_button);
-        mHideButton = AnimationUtils.loadAnimation(this,R.anim.hide_button);
-        mShowLayout = AnimationUtils.loadAnimation(this,R.anim.show_layout);
-        mHideLayout = AnimationUtils.loadAnimation(this,R.anim.hide_layout);
+        mShowButton = AnimationUtils.loadAnimation(this, R.anim.show_button);
+        mHideButton = AnimationUtils.loadAnimation(this, R.anim.hide_button);
+        mShowLayout = AnimationUtils.loadAnimation(this, R.anim.show_layout);
+        mHideLayout = AnimationUtils.loadAnimation(this, R.anim.hide_layout);
 
         mPhoneSettingsParent = (LinearLayout) findViewById(R.id.phone_settings_parent);
         mLauncherSettingsParent = (LinearLayout) findViewById(R.id.launcher_settings_parent);
