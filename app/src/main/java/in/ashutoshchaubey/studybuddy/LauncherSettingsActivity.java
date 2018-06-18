@@ -85,9 +85,9 @@ public class LauncherSettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if(pref.getBoolean("identified",false)){
-                    Toast.makeText(LauncherSettingsActivity.this, "Already identified useful apps", Toast.LENGTH_SHORT).show();
-                }else {
+//                if(pref.getBoolean("identified",false)){
+//                    Toast.makeText(LauncherSettingsActivity.this, "Already identified useful apps", Toast.LENGTH_SHORT).show();
+//                }else {
 
                     progressDialog.show();
 
@@ -109,7 +109,7 @@ public class LauncherSettingsActivity extends AppCompatActivity {
                     taskIdentifyUseful(0);
                 }
 
-            }
+//            }
         });
 
     }
