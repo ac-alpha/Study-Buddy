@@ -29,11 +29,13 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.orhanobut.logger.AndroidLogAdapter;
@@ -58,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     private FloatingActionButton fabOptions, fabPhoneSettings, fabLauncherSettings;
     private Animation mShowButton, mHideButton, mShowLayout, mHideLayout;
     private LinearLayout mPhoneSettingsParent, mLauncherSettingsParent, mSearchAppsParent, mPanelLabelParentCollapsed,
-            mPanelLabelParentExpanded;
-    private EditText mSearchEditText;
+            mPanelLabelParentExpanded, mSavedNoteParent;
+    private EditText mSearchEditText, mSavedNote;
     private Switch alarmSwitch;
     private Calendar alarmCal;
     private Intent alarmReceiverIntent;
@@ -70,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     SQLiteDatabase db;
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
+    String savedNoteContent;
+    TextView noteHint;
     private AlertDialog enableNotificationListenerAlertDialog;
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
@@ -419,6 +423,48 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
             }
         });
 
+        //Getting saved note from SharedPreferences
+        savedNoteContent = preferences.getString(Constants.SAVED_NOTE_CONTENT, "");
+
+        mSavedNote = (EditText) findViewById(R.id.saved_note);
+        noteHint = (TextView)findViewById(R.id.note_hint);
+
+        if(!savedNoteContent.equals("")){
+            noteHint.setText(savedNoteContent);
+        }
+
+        noteHint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mSavedNote.setVisibility(View.VISIBLE);
+                noteHint.setVisibility(GONE);
+                mSavedNote.setText(savedNoteContent);
+                mSavedNote.requestFocus();
+                //Showing the soft keyboard
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(mSavedNote, InputMethodManager.SHOW_IMPLICIT);
+
+            }
+        });
+
+        mSavedNote.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                editor.putString(Constants.SAVED_NOTE_CONTENT, charSequence.toString());
+                editor.apply();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
     }
 
     @Override
@@ -426,6 +472,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
         super.onResume();
         //Always open the launcher with panel state collapsed
         mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        //Always clear focus from the Saved note EditText when activity resumes
     }
 
     /**
@@ -524,6 +571,27 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
         } else {
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         }
+
+        savedNoteContent = preferences.getString(Constants.SAVED_NOTE_CONTENT, "");
+        if(!savedNoteContent.equals("")){
+            noteHint.setText(savedNoteContent);
+            mSavedNote.setVisibility(GONE);
+            noteHint.setVisibility(View.VISIBLE);
+            Toast.makeText(MainActivity.this,"Note Saved",Toast.LENGTH_SHORT).show();
+        }else{
+            noteHint.setText(R.string.note_hint);
+            mSavedNote.setVisibility(GONE);
+            noteHint.setVisibility(View.VISIBLE);
+        }
+
+        findViewById(R.id.saved_note_parent).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+
+                return true;
+            }
+        });
+
     }
 
     /**

@@ -11,7 +11,7 @@ import in.ashutoshchaubey.studybuddy.Constants.AppsEntry;
 
 public class AppsDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "AppsList5";
+    private static final String DATABASE_NAME = "AppsList6";
     private static final int DATABASE_VERSION = 1;
 
     public static final String CREATE_TABLE_APPS = "CREATE TABLE " + AppsEntry.TABLE_NAME + "("+

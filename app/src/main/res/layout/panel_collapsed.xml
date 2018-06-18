@@ -10,6 +10,7 @@
 
 
     <LinearLayout
+        android:id="@+id/saved_note_parent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="@dimen/views_margin_padding_xxxl"
@@ -17,16 +18,27 @@
         android:layout_marginStart="@dimen/views_margin_padding_m"
         android:layout_marginTop="@dimen/views_margin_padding_xl"
         android:background="#ffd1d1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:longClickable="true">
+
+        <TextView
+            android:id="@+id/note_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/views_margin_padding_m"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:background="@android:color/transparent"
+            android:text="@string/note_hint" />
 
         <EditText
             android:id="@+id/saved_note"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="20sp"
             android:layout_margin="@dimen/views_margin_padding_m"
             android:background="@android:color/transparent"
-            android:focusable="false"
-            android:hint="@string/note_hint" />
+            android:visibility="gone"/>
 
         <ImageView
             android:layout_width="match_parent"

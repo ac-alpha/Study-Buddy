@@ -10,6 +10,7 @@ public class Constants {
     public static String ALARM_ON = "on";
     public static String ALARM_OFF = "off";
     public static String ALARM_RINGING = "ringing";
+    public static String SAVED_NOTE_CONTENT = "savedNoteContent";
 
     public Constants(){}
 
@@ -17,8 +18,8 @@ public class Constants {
         public static final String TABLE_NAME = "apps";
         public static final String _ID = BaseColumns._ID;
         public static final String COLUMN_APP_NAME = "name";
-        public static final String COLUMN_APP_PACKAGE = "ImageUri";
-        public static final String COLUMN_APP_USEFUL = "rescued";
+        public static final String COLUMN_APP_PACKAGE = "packageName";
+        public static final String COLUMN_APP_USEFUL = "isUseful";
     }
 
 }
