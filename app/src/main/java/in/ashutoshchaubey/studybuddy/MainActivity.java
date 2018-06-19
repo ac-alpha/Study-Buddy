@@ -1,9 +1,12 @@
 package in.ashutoshchaubey.studybuddy;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,11 +15,19 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -24,6 +35,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -32,26 +44,30 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
-
+import java.util.Locale;
 import static android.view.View.GONE;
 
 public class MainActivity extends AppCompatActivity implements AppsRecyclerViewAdapter.ItemClickListener {
 
     private static final int REQ_CODE = 0;
+    private static final int CHOOSE_CAMERA_RESULT = 1;
     private PackageManager manager;
     private ArrayList<AppItem> apps;
     private AppsRecyclerViewAdapter adapter;
@@ -78,6 +94,13 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
 
+    String mCurrentPhotoPath;
+    ContentValues values;
+    File file;
+    ImageView imageView;
+    Bitmap help1;
+    ThumbnailUtils thumbnail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +126,12 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
          */
         appsDbHelper = new AppsDbHelper(this);
         db = appsDbHelper.getReadableDatabase();
+
+        /*
+         Code to fix the path exposed beyond app through ClipData.Item.getUri() bug
+         */
+        StrictMode.VmPolicy.Builder VMbuilder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(VMbuilder.build());
 
         /*
           Getting alarm system service for ringing alarm
@@ -465,7 +494,39 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
             }
         });
 
+
+
+        findViewById(R.id.saved_note_parent).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (Build.VERSION.SDK_INT >= 23) {
+                    if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        Log.v("MainActivity","Permission is granted");
+                        takeImageAndSave();
+                    } else {
+
+                        Log.v("MainActivity","Permission is revoked");
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+
+                    }
+                }else { //permission is automatically granted on sdk<23 upon installation
+                    Log.v("MainActivity","Permission is granted");
+                    takeImageAndSave();
+                }
+
+                return true;
+            }
+        });
+
+        imageView = (ImageView) findViewById(R.id.note_image);
+        if(!preferences.getString(Constants.SAVED_IMAGE_PATH,"").equals("")){
+            imageView.setImageBitmap(BitmapFactory.decodeFile(preferences.getString(Constants.SAVED_IMAGE_PATH,"")));
+        }
+
     }
+
+
 
     @Override
     protected void onResume() {
@@ -473,6 +534,16 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
         //Always open the launcher with panel state collapsed
         mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         //Always clear focus from the Saved note EditText when activity resumes
+        savedNoteContent = preferences.getString(Constants.SAVED_NOTE_CONTENT, "");
+        if(!savedNoteContent.equals("")){
+            noteHint.setText(savedNoteContent);
+            mSavedNote.setVisibility(GONE);
+            noteHint.setVisibility(View.VISIBLE);
+        }else{
+            noteHint.setText(R.string.note_hint);
+            mSavedNote.setVisibility(GONE);
+            noteHint.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -560,6 +631,21 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CHOOSE_CAMERA_RESULT) {
+            if(resultCode == Activity.RESULT_OK) {
+                if(file.exists()){
+                    Toast.makeText(this,"The image was saved at "+file.getAbsolutePath(),Toast.LENGTH_LONG).show();;
+                }
+                editor.putString(Constants.SAVED_IMAGE_PATH,file.getAbsolutePath());
+                editor.apply();
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                imageView.setImageBitmap(bitmap);
+            }
+        }
+    }
+
+    @Override
     public void onBackPressed() {
         Logger.i("Back button pressed from launcher home");
         /*
@@ -577,20 +663,23 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
             noteHint.setText(savedNoteContent);
             mSavedNote.setVisibility(GONE);
             noteHint.setVisibility(View.VISIBLE);
-            Toast.makeText(MainActivity.this,"Note Saved",Toast.LENGTH_SHORT).show();
         }else{
             noteHint.setText(R.string.note_hint);
             mSavedNote.setVisibility(GONE);
             noteHint.setVisibility(View.VISIBLE);
         }
 
-        findViewById(R.id.saved_note_parent).setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
+    }
 
-                return true;
-            }
-        });
+    private void takeImageAndSave() {
+
+        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "IMG_" + timeStamp + ".jpg");
+        Uri tempuri = Uri.fromFile(file);
+        i.putExtra(MediaStore.EXTRA_OUTPUT, tempuri);
+        i.putExtra(MediaStore.EXTRA_VIDEO_QUALITY,0);
+        startActivityForResult(i, CHOOSE_CAMERA_RESULT);
 
     }
 

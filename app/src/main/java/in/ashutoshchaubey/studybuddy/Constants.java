@@ -11,6 +11,7 @@ public class Constants {
     public static String ALARM_OFF = "off";
     public static String ALARM_RINGING = "ringing";
     public static String SAVED_NOTE_CONTENT = "savedNoteContent";
+    public static String SAVED_IMAGE_PATH = "savedImagePath";
 
     public Constants(){}
 
