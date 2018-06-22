@@ -2,7 +2,7 @@
     <string name="app_name">Study!Buddy</string>
     <string name="dark_theme">Dark Theme</string>
     <string name="apps">Apps</string>
-    <string name="note_hint">Go on… Type what you want… Doesn\'t work yet :(</string>
+    <string name="note_hint">Go on… Type what you want… Long press to add images…</string>
     <string name="launcher_settings">Launcher Settings</string>
     <string name="phone_settings">Phone Settings</string>
     <string name="default_alarm">Default Alarm</string>
