@@ -1,5 +1,5 @@
-# Study! Buddy
-***
+# Study! Buddy 
+
 This is an android launcher to keep yourself away from distractions during Exams along with a bunch of shortcuts to save your precious time during exams. This app motivates you for studying by hiding the launch icons and notifications of apps belonging to specific categories in the play store. The launcher is inspired by the default launcher for Android Nougat.
 
 **Note : Project Name is Study! Buddy... Due to github repo naming guidelines, I had to use Study-Buddy**
@@ -8,7 +8,7 @@ This is an android launcher to keep yourself away from distractions during Exams
 Just install the launcher apk. Then go to 
 
 - Settings :arrow_right: Apps :arrow_right: Click on the settings icon on top :arrow_right: Go  to Home App :arrow_right: Select Study! Buddy... **(For Android Nougat)**
-- Settings :arrow_right: Applications :arrow_right: Default applications :arrow_right: Home screen -> Select Study!Buddy **(For Android MarshMallow)**
+- Settings :arrow_right: Applications :arrow_right: Default applications :arrow_right: Home screen :arrow_right: Select Study!Buddy **(For Android MarshMallow)**
 
 **This might vary depending on your android version**
 
