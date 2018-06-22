@@ -4,6 +4,8 @@ This is an android launcher to keep yourself away from distractions during Exams
 
 **Note : Project Name is Study! Buddy... Due to github repo naming guidelines, I had to use Study-Buddy**
 
+![Panel Collapsed](/home_collapsed.png) ![Panel Expanded](/home_expanded.png)
+
 ## Using the Launcher
 Just install the launcher apk. Then go to 
 
@@ -89,8 +91,4 @@ private void taskIdentifyUseful(final int no) {
 - Opening wallpaper changer on long pressing launcher screen.
 - Allowing user to manually change the apps which are useful.
 - Syncing the Notes with Google Keep automatically.
-
-
-
-
-`_****_`
+- Improving the UI, e.g. changing colors/fonts depending on wallpaper background.
