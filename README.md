@@ -1,10 +1,15 @@
 # Study! Buddy
 ***
 This is an android launcher to keep yourself away from distractions during Exams along with a bunch of shortcuts to save your precious time during exams. This app motivates you for studying by hiding the launch icons and notifications of apps belonging to specific categories in the play store. The launcher is inspired by the default launcher for Android Nougat.
+
 **Note : Project Name is Study! Buddy... Due to github repo naming guidelines, I had to use Study-Buddy**
 
 ## Using the Launcher
-Just install the launcher apk. Then go to Settings -> Apps -> Click on the settings icon on top -> Go  to Home App -> Select Study! Buddy...
+Just install the launcher apk. Then go to 
+
+- Settings :arrow_right: Apps :arrow_right: Click on the settings icon on top :arrow_right: Go  to Home App :arrow_right: Select Study! Buddy... **(For Android Nougat)**
+- Settings :arrow_right: Applications :arrow_right: Default applications :arrow_right: Home screen -> Select Study!Buddy **(For Android MarshMallow)**
+
 **This might vary depending on your android version**
 
 ## Features
@@ -71,3 +76,20 @@ private void taskIdentifyUseful(final int no) {
 
 }
 ```
+
+## Issues
+
+- The **NotificationListenerService** doesn't work properly sometimes (especially in the android **Nougat devices**).
+- You can only check the useful apps once. If new apps are installed you have to reinstall the launcher by clearing all previous data related to launcher.
+- If you start the alarm switch before setting the default time then the alarm starts ringing instantaneously.
+- The app identifies **Chrome** as not useful due to it's Play Store Category as  **"Communication"**. The same might happen for few other apps.
+- **Feel free to raise issues... Above are only a few...**
+
+## Future Goals
+- Opening wallpaper changer on long pressing launcher screen.
+- Allowing user to manually change the apps which are useful.
+- Syncing the Notes with Google Keep automatically.
+
+
+
+
