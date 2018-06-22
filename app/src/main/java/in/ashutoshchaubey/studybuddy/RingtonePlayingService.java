@@ -20,11 +20,30 @@ public class RingtonePlayingService extends Service {
     MediaPlayer mMediaPlayer;
     int startId = 0;
     SharedPreferences prefs;
+    String TAG = "RongtonePlayingService";
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.e(TAG,"inside onCreate()");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.e(TAG,"inside onDestroy()");
+    }
+
+    @Override
+    public boolean stopService(Intent name) {
+        Log.e(TAG,"inside stopService()");
+        return super.stopService(name);
     }
 
     @Override

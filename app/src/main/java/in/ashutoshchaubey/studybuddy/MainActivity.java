@@ -53,6 +53,9 @@ import android.widget.Toast;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.squareup.picasso.Picasso;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -94,12 +97,9 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
 
-    String mCurrentPhotoPath;
-    ContentValues values;
     File file;
     ImageView imageView;
-    Bitmap help1;
-    ThumbnailUtils thumbnail;
+    private Bitmap noteImageBitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
         setContentView(R.layout.activity_main);
 
         this.context = context;
+
+        startService(new Intent(this, NotificationCollectorMonitorService.class));
 
         /*
           Logger for making the logs readable
@@ -163,77 +165,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
          */
         else if (switchState.equals(Constants.ALARM_RINGING)) {
             alarmSwitch.setChecked(true);
-            /*
-              Creating an AlertDialog to ask for snooze or to stop the alarm
-             */
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Snooze Alarm?");
-            builder.setMessage("Press Snooze to set alarm for after 10 minutes");
-            builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    /*
-                      If user presses Snooze button then get default time of alarm from SharedPreferences
-                      and increment it by 10min and set another alarm
-                     */
-                    int hr = preferences.getInt("hourOfDay", 0);
-                    int min = preferences.getInt("minute", 0);
-                    int snoozemin = preferences.getInt("snooze_time", 1);
-                    min += snoozemin;
-                    if (min > 60) {
-                        min -= 60;
-                        hr += 1;
-                    }
-                    alarmCal = Calendar.getInstance();
-                    Calendar nowCal = Calendar.getInstance();
-                    alarmCal.set(Calendar.HOUR_OF_DAY, hr);
-                    alarmCal.set(Calendar.MINUTE, min);
-                    if (alarmCal.compareTo(nowCal) <= 0) {
-                        alarmCal.set(Calendar.DATE, 1);
-                    }
-
-                    /*
-                      Creating an intent for the BroadcastReceiver
-                     */
-                    alarmReceiverIntent = new Intent(MainActivity.this, AlarmReceiver.class);
-
-                    /*
-                      extra to tell that the alarm is to be switched on or off
-                     */
-                    alarmReceiverIntent.putExtra("extra", true);
-                    /*
-                      Creating PendingIntent because we don't want the intent to be performed just now
-                     */
-                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
-                            alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    //Setting the alarmManager
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pendingIntent);
-                    /*
-                      Changing the switchState to Constants.ALARM_ON
-                     */
-                    editor.putString("switchState", Constants.ALARM_ON);
-                    editor.apply();
-                }
-            });
-            builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    alarmReceiverIntent = new Intent(MainActivity.this, AlarmReceiver.class);
-                    alarmReceiverIntent.putExtra("extra", false);
-                    pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
-                            alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    //Stopping the alarm while ringing
-                    sendBroadcast(alarmReceiverIntent);
-                    editor.putString("switchState", Constants.ALARM_OFF);
-                    if (pendingIntent != null) {
-                        //Cancelling the PendingIntent
-                        alarmManager.cancel(pendingIntent);
-                    }
-                    editor.apply();
-                }
-            });
-            AlertDialog dialog = builder.create();
+            AlertDialog dialog = generateAlarmAlertDialog();
             dialog.show();
         }
 
@@ -521,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
 
         imageView = (ImageView) findViewById(R.id.note_image);
         if(!preferences.getString(Constants.SAVED_IMAGE_PATH,"").equals("")){
-            imageView.setImageBitmap(BitmapFactory.decodeFile(preferences.getString(Constants.SAVED_IMAGE_PATH,"")));
+            Picasso.get().load(new File(preferences.getString(Constants.SAVED_IMAGE_PATH,""))).into(imageView);
         }
 
     }
@@ -531,6 +463,8 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
     @Override
     protected void onResume() {
         super.onResume();
+        Logger.d("Just a check!");
+
         //Always open the launcher with panel state collapsed
         mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         //Always clear focus from the Saved note EditText when activity resumes
@@ -544,6 +478,24 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
             mSavedNote.setVisibility(GONE);
             noteHint.setVisibility(View.VISIBLE);
         }
+
+        String switchState = preferences.getString("switchState", "error");
+
+        /*
+          If switchState was Constants.ALARM_ON
+         */
+        if (switchState.equals(Constants.ALARM_ON)) {
+            alarmSwitch.setChecked(true);
+        }
+        /*
+          If switchState was Constants.ALARM_RINGING
+         */
+        else if (switchState.equals(Constants.ALARM_RINGING)) {
+            alarmSwitch.setChecked(true);
+            AlertDialog dialog = generateAlarmAlertDialog();
+            dialog.show();
+        }
+
     }
 
     /**
@@ -639,8 +591,7 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
                 }
                 editor.putString(Constants.SAVED_IMAGE_PATH,file.getAbsolutePath());
                 editor.apply();
-                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-                imageView.setImageBitmap(bitmap);
+                Picasso.get().load(new File(file.getAbsolutePath())).into(imageView);
             }
         }
     }
@@ -751,6 +702,81 @@ public class MainActivity extends AppCompatActivity implements AppsRecyclerViewA
                     }
                 });
         return(alertDialogBuilder.create());
+    }
+
+    private AlertDialog generateAlarmAlertDialog(){
+        /*
+              Creating an AlertDialog to ask for snooze or to stop the alarm
+             */
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Snooze Alarm?");
+        builder.setMessage("Press Snooze to set alarm for after 10 minutes");
+        builder.setPositiveButton("Snooze", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                    /*
+                      If user presses Snooze button then get default time of alarm from SharedPreferences
+                      and increment it by 10min and set another alarm
+                     */
+                int hr = preferences.getInt("hourOfDay", 0);
+                int min = preferences.getInt("minute", 0);
+                int snoozemin = preferences.getInt("snooze_time", 1);
+                min += snoozemin;
+                if (min > 60) {
+                    min -= 60;
+                    hr += 1;
+                }
+                alarmCal = Calendar.getInstance();
+                Calendar nowCal = Calendar.getInstance();
+                alarmCal.set(Calendar.HOUR_OF_DAY, hr);
+                alarmCal.set(Calendar.MINUTE, min);
+                if (alarmCal.compareTo(nowCal) <= 0) {
+                    alarmCal.set(Calendar.DATE, 1);
+                }
+
+                    /*
+                      Creating an intent for the BroadcastReceiver
+                     */
+                alarmReceiverIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+
+                    /*
+                      extra to tell that the alarm is to be switched on or off
+                     */
+                alarmReceiverIntent.putExtra("extra", true);
+                    /*
+                      Creating PendingIntent because we don't want the intent to be performed just now
+                     */
+                pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
+                        alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                //Setting the alarmManager
+                alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), pendingIntent);
+                    /*
+                      Changing the switchState to Constants.ALARM_ON
+                     */
+                editor.putString("switchState", Constants.ALARM_ON);
+                editor.apply();
+            }
+        });
+        builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                alarmReceiverIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+                alarmReceiverIntent.putExtra("extra", false);
+                pendingIntent = PendingIntent.getBroadcast(MainActivity.this, REQ_CODE,
+                        alarmReceiverIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                //Stopping the alarm while ringing
+                sendBroadcast(alarmReceiverIntent);
+                editor.putString("switchState", Constants.ALARM_OFF);
+                if (pendingIntent != null) {
+                    //Cancelling the PendingIntent
+                    alarmManager.cancel(pendingIntent);
+                }
+                alarmSwitch.setChecked(false);
+                editor.apply();
+            }
+        });
+        return builder.create();
     }
 
 }

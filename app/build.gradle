@@ -45,4 +45,5 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:26.1.0'
     implementation 'com.orhanobut:logger:2.2.0'
     compile 'com.koushikdutta.ion:ion:2.+'
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }

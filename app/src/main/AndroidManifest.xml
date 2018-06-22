@@ -42,6 +42,8 @@
             android:name=".RingtonePlayingService"
             android:enabled="true" />
 
+        <service android:name=".NotificationCollectorMonitorService"/>
+
         <activity
             android:configChanges="orientation"
             android:screenOrientation="portrait"
